@@ -53,5 +53,35 @@ class SequentialComputer(object):
 
 
 class SequentialStorage(object):
-    def __init__(self):
-        pass
+    def __init__(self, network: SequentialNetwork):
+        self.map = network
+
+    @property
+    def map(self):
+        return self._map
+
+    @map.setter
+    def map(self, network: SequentialNetwork):
+        layers = list()
+        for layer in network:
+            elements = np.array([
+                unit.function.equation if not isinstance(unit, Input) else 'Input'
+                for unit in layer
+            ])
+            uniq_equations = list(collections.Counter(elements).keys())
+            uniq_equations = dict(
+                zip(
+                    uniq_equations, range(len(uniq_equations))
+                )
+            )
+            mapper = list()
+            for uniq_equation in uniq_equations:
+                n_elements = 0
+                for elem in layer:
+                    if isinstance(elem, Input) and uniq_equation == 'Input':
+                        n_elements += 1
+                    elif uniq_equation == elem.function.equation:
+                       n_elements += 1
+                mapper.append(n_elements)
+            layers.append(mapper)
+        self._map = layers
